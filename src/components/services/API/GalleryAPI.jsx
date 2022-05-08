@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 const API = {
   HTTPS: 'https://pixabay.com/api/',
   KEY: '25784131-d2971e411192c7c57d85795af',
@@ -17,6 +19,11 @@ export default async function fetchImages({ keyword, page }) {
     return Promise.reject(new Error(`CLown`));
   });
 }
+
+fetchImages.propTypes = {
+  keyword: PropTypes.string.isRequired,
+  page: PropTypes.string.isRequired,
+};
 
 // try {
 //   await axios
