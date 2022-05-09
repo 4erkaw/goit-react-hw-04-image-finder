@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import axios from 'axios';
 
 const API = {
   HTTPS: 'https://pixabay.com/api/',
@@ -10,30 +11,15 @@ const API = {
 
 export default async function fetchImages({ keyword, page }) {
   const { HTTPS, KEY, PARAMS, PER_PAGE } = API;
-  return fetch(
-    `${HTTPS}/?key=${KEY}&q=${keyword}&${PARAMS}&page=${page}&${PER_PAGE}`
-  ).then(res => {
-    if (res.ok) {
-      return res.json();
-    }
-    return Promise.reject(new Error(`CLown`));
-  });
+  return await axios
+    .get(`${HTTPS}/?key=${KEY}&q=${keyword}&${PARAMS}&page=${page}&${PER_PAGE}`)
+    .then(({ data }) => {
+      return data;
+    })
+    .catch(error => console.log(error));
 }
 
 fetchImages.propTypes = {
   keyword: PropTypes.string.isRequired,
   page: PropTypes.string.isRequired,
 };
-
-// try {
-//   await axios
-//     .get(
-//       `${HTTPS}/?key=${KEY}&q=${keyword}&${PARAMS}&page=${page}&${PER_PAGE}`
-//     )
-//     .then(({ data }) => {
-//       console.log(data);
-//       return data;
-//     });
-// } catch (error) {
-//   console.log(error);
-// }

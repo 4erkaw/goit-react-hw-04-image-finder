@@ -98,3 +98,20 @@ ImageGallery.propTypes = {
   keyword: PropTypes.string.isRequired,
   openModal: PropTypes.func.isRequired,
 };
+
+// fetchImages({ keyword, page })
+// .then(images => {
+//   if (!images.total) {
+//     throw new Error('Sorry! we couldn`t find any images by your request');
+//   }
+//   if (images.hits.length === 0) {
+//     Notify.info('No more images by your request');
+//     return;
+//   }
+//   this.setState(prev => ({
+//     images: [...prev.images, ...images.hits],
+//     total: images.totalHits,
+//     status: Status.RESOLVED,
+//   }));
+// })
+// .catch(error => this.setState({ error, status: Status.REJECTED }));
