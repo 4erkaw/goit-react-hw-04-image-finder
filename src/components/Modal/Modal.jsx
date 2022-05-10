@@ -36,7 +36,18 @@ export default class Modal extends Component {
   }
 }
 
+// export default function Modal({ modalImage, closeModal }) {
+//   return createPortal(
+//     <div onClick={() => closeModal()} className={s.overlay}>
+//       <div className={s.modal}>
+//         <img src={modalImage} alt="" />
+//       </div>
+//     </div>,
+//     modal
+//   );
+// }
+
 Modal.propTypes = {
-  modalImage: PropTypes.string.isRequired,
+  modalImage: PropTypes.string,
   closeModal: PropTypes.func.isRequired,
 };
