@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import s from './ImageGallery.module.css';
-import fetchImages from '../services/API';
+import fetchImages from '../../services/API';
 import ImageGalleryItem from 'components/ImageGalleryItem';
 import Button from './../Button';
 import Loader from 'components/Loader';
@@ -15,66 +15,60 @@ const Status = {
 };
 
 export default function ImageGallery({ openModal }) {
-  const [keyword, setKeyword] = useState('');
+  const [keyword, setKeyword] = useState('ukraine');
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(false);
   const [status, setStatus] = useState(Status.IDLE);
   const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    if (page !== 1) {
-      getImages(keyword, page).then(({ hits, totalHits }) => {
+  const saveSearch = keyword => {
+    setImages([]);
+    setKeyword(keyword);
+    setPage(1);
+    setStatus(Status.PENDING);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  const getImages = (keyword, page) => {
+    setError(false);
+
+    fetchImages({ keyword, page })
+      .then(({ hits, totalHits }) => {
+        if (!totalHits) {
+          throw new Error(`Sorry! there is no results by: ${keyword}`);
+        }
         setImages(prev => [...prev, ...hits]);
         setTotal(totalHits);
         setStatus(Status.RESOLVED);
-        document.getElementById('scroll').scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-          inline: 'nearest',
-        });
+      })
+      .catch(error => {
+        setError(error);
+        setStatus(Status.REJECTED);
+        setTimeout(() => {
+          setStatus(Status.IDLE);
+        }, 2000);
       });
+  };
+
+  useEffect(() => {
+    if (!keyword) {
       return;
     }
-    if (keyword !== '') {
-      setStatus(Status.PENDING);
-      setImages([]);
-      getImages(keyword, 1)
-        .then(({ hits, totalHits }) => {
-          if (hits.length > 0) {
-            setImages(hits);
-            setTotal(totalHits);
-            setStatus(Status.RESOLVED);
-            return;
-          }
-          if (!images.total) {
-            throw new Error(
-              'Sorry! we couldn`t find any images by your request'
-            );
-          }
-          setStatus(Status.REJECTED);
-          setTimeout(() => {
-            setStatus(Status.IDLE);
-          }, 3000);
-        })
-        .catch(error => {
-          setError(error);
-          setStatus(Status.REJECTED);
-          setTimeout(() => {
-            setStatus(Status.IDLE);
-          }, 2000);
-        });
-    }
+    getImages(keyword, page);
   }, [keyword, page]);
 
-  const getImages = (keyword, page) => {
-    return fetchImages({ keyword, page });
-  };
-
-  const saveSearch = keyword => {
-    setKeyword(keyword);
-    setPage(1);
-  };
+  useEffect(() => {
+    if (page > 1) {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  });
 
   const loadMore = () => {
     setPage(page => page + 1);
@@ -86,11 +80,11 @@ export default function ImageGallery({ openModal }) {
       {status === Status.IDLE && (
         <h2 className={s.title}>Enter keyword to browse</h2>
       )}
-      {status === Status.PENDING && <Loader />}
       {status === Status.RESOLVED && (
         <>
           <ul className={s.gallery}>
             <ImageGalleryItem openModal={openModal} images={images} />
+            {status === Status.PENDING && <Loader />}
           </ul>
           {total > images.length && <Button onClick={loadMore} />}
         </>

@@ -7,14 +7,13 @@ export default function ImageGalleryItem({ images, openModal }) {
   }
   return (
     <>
-      {images.map(({ id, webformatURL, largeImageURL, tags }, idx) => (
+      {images.map(({ id, webformatURL, largeImageURL, tags }) => (
         <li
           onClick={() => handleClick(largeImageURL)}
           key={id}
           className={s.item}
         >
           <img src={webformatURL} alt={tags} />
-          {idx === images.length - 12 && <div id="scroll"></div>}
         </li>
       ))}
     </>
