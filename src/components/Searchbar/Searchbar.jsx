@@ -4,7 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import { Notify } from 'notiflix';
 import PropTypes from 'prop-types';
 
-export default function Searchbar({ onSubmit }) {
+export default function Searchbar({ saveSubmit }) {
   const [keyword, setKeyword] = useState('');
 
   const handleChange = e => {
@@ -17,7 +17,7 @@ export default function Searchbar({ onSubmit }) {
     if (keyword.trim() === '') {
       return Notify.info('Enter keyword!');
     }
-    onSubmit(keyword);
+    saveSubmit(keyword.toLowerCase());
     setKeyword('');
   };
 
@@ -44,7 +44,7 @@ export default function Searchbar({ onSubmit }) {
 }
 
 Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  saveSubmit: PropTypes.func.isRequired,
 };
 
 // export default class Searchbar extends Component {

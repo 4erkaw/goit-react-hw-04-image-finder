@@ -4,8 +4,8 @@ import fetchImages from '../services/API';
 import ImageGalleryItem from 'components/ImageGalleryItem';
 import Button from './../Button';
 import Loader from 'components/Loader';
-import { Notify } from 'notiflix';
 import PropTypes from 'prop-types';
+import Searchbar from './../Searchbar';
 
 const Status = {
   IDLE: 'idle',
@@ -14,93 +14,97 @@ const Status = {
   REJECTED: 'rejected',
 };
 
-export default function ImageGallery({ openModal, keyword }) {
+export default function ImageGallery({ openModal }) {
+  const [keyword, setKeyword] = useState('');
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(false);
   const [status, setStatus] = useState(Status.IDLE);
   const [total, setTotal] = useState(0);
 
-  const getImages = ({ keyword, page }) => {
-    setStatus(Status.PENDING);
-    setError(false);
-
-    fetchImages({ keyword, page })
-      .then(images => {
-        if (!images.total) {
-          throw new Error('Sorry! we couldn`t find any images by your request');
-        }
-        if (images.hits.length === 0) {
-          Notify.info('No more images by your request');
-          return;
-        }
-        setImages(prev => [...prev, ...images.hits]);
-        setTotal(images.totalHits);
+  useEffect(() => {
+    if (page !== 1) {
+      getImages(keyword, page).then(({ hits, totalHits }) => {
+        setImages(prev => [...prev, ...hits]);
+        setTotal(totalHits);
         setStatus(Status.RESOLVED);
-      })
-      .catch(error => {
-        setError(error);
-        setStatus(Status.REJECTED);
+        document.getElementById('scroll').scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        });
       });
-  };
-
-  useEffect(() => {
-    setImages([]);
-    setPage(1);
-  }, [keyword]);
-
-  useEffect(() => {
-    if (!keyword) {
       return;
     }
-    getImages({ keyword, page });
+    if (keyword !== '') {
+      setStatus(Status.PENDING);
+      setImages([]);
+      getImages(keyword, 1)
+        .then(({ hits, totalHits }) => {
+          if (hits.length > 0) {
+            setImages(hits);
+            setTotal(totalHits);
+            setStatus(Status.RESOLVED);
+            return;
+          }
+          if (!images.total) {
+            throw new Error(
+              'Sorry! we couldn`t find any images by your request'
+            );
+          }
+          setStatus(Status.REJECTED);
+          setTimeout(() => {
+            setStatus(Status.IDLE);
+          }, 3000);
+        })
+        .catch(error => {
+          setError(error);
+          setStatus(Status.REJECTED);
+          setTimeout(() => {
+            setStatus(Status.IDLE);
+          }, 2000);
+        });
+    }
   }, [keyword, page]);
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.keyword !== keyword) {
-  //     this.setState({ images: [], page: 1 });
-  //   }
-  //   if (
-  //     page !== prevState.page ||
-  //     (prevProps.keyword !== keyword && page === 1)
-  //   ) {
-  //     this.setState({ status: Status.PENDING });
-  //     this.getImages();
-  //   }
-  // }
+  const getImages = (keyword, page) => {
+    return fetchImages({ keyword, page });
+  };
+
+  const saveSearch = keyword => {
+    setKeyword(keyword);
+    setPage(1);
+  };
 
   const loadMore = () => {
     setPage(page => page + 1);
   };
-  if (status === 'idle') {
-    return <h2 className={s.title}>Enter keyword to browse</h2>;
-  }
 
-  if (status === 'pending') {
-    return <Loader />;
-  }
-
-  if (status === 'resolved') {
-    return (
-      <>
-        <ul className={s.gallery}>
-          <ImageGalleryItem openModal={openModal} images={images} />
-        </ul>
-        {total > images.length && <Button onClick={loadMore} />}
-      </>
-    );
-  }
-  if (status === 'rejected') {
-    return (
-      <>
-        <h2 className={s.title}>{error.message}</h2>
-      </>
-    );
-  }
+  return (
+    <>
+      <Searchbar saveSubmit={saveSearch} />
+      {status === Status.IDLE && (
+        <h2 className={s.title}>Enter keyword to browse</h2>
+      )}
+      {status === Status.PENDING && <Loader />}
+      {status === Status.RESOLVED && (
+        <>
+          <ul className={s.gallery}>
+            <ImageGalleryItem openModal={openModal} images={images} />
+          </ul>
+          {total > images.length && <Button onClick={loadMore} />}
+        </>
+      )}
+      {status === Status.REJECTED && (
+        <>
+          <h2 className={s.title}>{error.message}</h2>
+        </>
+      )}
+    </>
+  );
 }
 
 ImageGallery.propTypes = {
-  keyword: PropTypes.string.isRequired,
   openModal: PropTypes.func.isRequired,
 };
 

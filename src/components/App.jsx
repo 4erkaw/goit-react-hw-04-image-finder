@@ -1,16 +1,10 @@
 import { useState } from 'react';
-import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Modal from './Modal';
 
 export default function App() {
-  const [keyword, setKeyword] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState(null);
-
-  const handleFormSubmit = keyword => {
-    setKeyword(keyword);
-  };
 
   const toggleModal = modalImage => {
     setModalOpen(!modalOpen);
@@ -19,8 +13,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Searchbar onSubmit={handleFormSubmit} />
-      <ImageGallery openModal={toggleModal} keyword={keyword} />
+      <ImageGallery openModal={toggleModal} />
       {modalOpen && <Modal modalImage={modalImage} closeModal={toggleModal} />}
     </div>
   );
