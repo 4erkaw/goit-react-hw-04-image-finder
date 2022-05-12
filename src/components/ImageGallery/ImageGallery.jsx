@@ -26,11 +26,11 @@ export default function ImageGallery({ openModal }) {
     setImages([]);
     setKeyword(keyword);
     setPage(1);
-    setStatus(Status.PENDING);
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
+    setStatus(Status.PENDING);
   };
 
   const getImages = (keyword, page) => {
@@ -68,7 +68,7 @@ export default function ImageGallery({ openModal }) {
         behavior: 'smooth',
       });
     }
-  });
+  }, [images, page]);
 
   const loadMore = () => {
     setPage(page => page + 1);
